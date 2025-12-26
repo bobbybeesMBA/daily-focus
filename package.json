@@ -1,0 +1,28 @@
+{
+  "name": "daily-focus",
+  "version": "1.0.0",
+  "description": "Daily Focus - Top 3 tasks email reminder",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@googleapis/tasks": "^12.0.0",
+    "dotenv": "^17.2.3",
+    "googleapis": "^169.0.0",
+    "nodemailer": "^7.0.12",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/nodemailer": "^7.0.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
