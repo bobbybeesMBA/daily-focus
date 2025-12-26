@@ -1,4 +1,24 @@
+# Dependencies
 node_modules/
-dist/
+
+# Environment (contains secrets)
 .env
+
+# Logs
 *.log
+npm-debug.log*
+
+# Build artifacts (for development)
+# Note: dist/ is included in releases
+# dist/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

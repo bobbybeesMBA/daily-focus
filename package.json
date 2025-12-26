@@ -1,28 +1,43 @@
 {
-  "name": "daily-focus",
-  "version": "1.0.0",
-  "description": "Daily Focus - Top 3 tasks email reminder",
+  "name": "task-dawn",
+  "version": "1.0.0-alpha",
+  "description": "Task Dawn - Ignite your day with prioritized tasks in your inbox",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
+    "build": "npm run build:main && npm run build:setup",
+    "build:main": "ncc build src/index.ts -o dist/main -m",
+    "build:setup": "ncc build src/setup.ts -o dist/setup -m",
+    "start": "node dist/main/index.js",
+    "setup": "node dist/setup/index.js",
+    "dev": "npx tsx src/index.ts",
+    "dev:setup": "npx tsx src/setup.ts",
+    "clean": "node -e \"require('fs').rmSync('dist', {recursive:true, force:true})\"",
+    "release": "npm run clean && npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "tasks",
+    "productivity",
+    "email",
+    "google-tasks",
+    "icloud",
+    "automation"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
-  "dependencies": {
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
     "@googleapis/tasks": "^12.0.0",
+    "@types/node": "^25.0.3",
+    "@types/nodemailer": "^7.0.4",
+    "@vercel/ncc": "^0.38.4",
     "dotenv": "^17.2.3",
     "googleapis": "^169.0.0",
     "nodemailer": "^7.0.12",
-    "zod": "^4.2.1"
-  },
-  "devDependencies": {
-    "@types/node": "^25.0.3",
-    "@types/nodemailer": "^7.0.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "zod": "^4.2.1"
   }
 }

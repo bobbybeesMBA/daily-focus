@@ -1,13 +1,13 @@
-name: Daily Focus Email
+name: Task Dawn - Daily Digest
 
 on:
   schedule:
-    # Run daily at 12:00 UTC, except Saturday (day 6)
-    - cron: '0 12 * * 0-5'
+    # Run weekdays at 12:00 UTC (Mon-Fri)
+    - cron: '0 12 * * 1-5'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
-  send-daily-focus:
+  send-daily-digest:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
       - name: Build TypeScript
         run: npm run build
 
-      - name: Run Daily Focus
+      - name: Run Task Dawn
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}

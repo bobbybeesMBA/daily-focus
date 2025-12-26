@@ -52,50 +52,62 @@ async function withRetry<T>(
   throw new Error('Max retries exceeded');
 }
 
-async function getDefaultTaskListId(): Promise<string> {
+async function getAllTaskLists(): Promise<{ id: string; title: string }[]> {
   const response = await withRetry(() => tasksApi.tasklists.list());
   const lists = response.data.items || [];
+  const validLists: { id: string; title: string }[] = [];
 
   for (const list of lists) {
     const parsed = TaskListSchema.safeParse(list);
     if (parsed.success) {
-      // Return first list (typically the default "@default" list)
-      console.log(`Using task list: "${parsed.data.title}"`);
-      return parsed.data.id;
+      validLists.push({ id: parsed.data.id, title: parsed.data.title });
     }
   }
 
-  // Fallback to @default
-  console.log('Using @default task list');
-  return '@default';
+  return validLists;
 }
 
 export async function fetchTasks(): Promise<Task[]> {
-  const taskListId = await getDefaultTaskListId();
+  // Fetch ALL task lists to capture iCloud-synced tasks via IFTTT
+  const taskLists = await getAllTaskLists();
 
-  const response = await withRetry(() =>
-    tasksApi.tasks.list({
-      tasklist: taskListId,
-      showCompleted: false,
-      showHidden: false,
-      maxResults: 100,
-    })
-  );
+  if (taskLists.length === 0) {
+    console.log('No task lists found, using @default');
+    taskLists.push({ id: '@default', title: 'Default' });
+  }
 
-  const items = response.data.items || [];
-  const validTasks: Task[] = [];
+  console.log(`Found ${taskLists.length} task list(s): ${taskLists.map(l => l.title).join(', ')}`);
 
-  for (const item of items) {
-    const parsed = TaskSchema.safeParse(item);
-    if (parsed.success && parsed.data.status === 'needsAction') {
-      validTasks.push({
-        ...parsed.data,
-        created: (item as any).updated, // Google Tasks uses 'updated' as creation proxy
-      });
+  const allTasks: Task[] = [];
+
+  for (const list of taskLists) {
+    try {
+      const response = await withRetry(() =>
+        tasksApi.tasks.list({
+          tasklist: list.id,
+          showCompleted: false,
+          showHidden: false,
+          maxResults: 100,
+        })
+      );
+
+      const items = response.data.items || [];
+
+      for (const item of items) {
+        const parsed = TaskSchema.safeParse(item);
+        if (parsed.success && parsed.data.status === 'needsAction') {
+          allTasks.push({
+            ...parsed.data,
+            created: (item as any).updated, // Google Tasks uses 'updated' as creation proxy
+          });
+        }
+      }
+    } catch (error) {
+      console.warn(`Warning: Could not fetch tasks from list "${list.title}"`);
     }
   }
 
-  return validTasks;
+  return allTasks;
 }
 
 export function rankTasks(tasks: Task[]): Task[] {
