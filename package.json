@@ -4,13 +4,12 @@
   "description": "Task Dawn - Ignite your day with prioritized tasks in your inbox",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npm run build:main && npm run build:setup",
-    "build:main": "ncc build src/index.ts -o dist/main -m",
-    "build:setup": "ncc build src/setup.ts -o dist/setup -m",
+    "setup": "npx tsx src/install.ts",
     "start": "node dist/main/index.js",
-    "setup": "node dist/setup/index.js",
     "dev": "npx tsx src/index.ts",
-    "dev:setup": "npx tsx src/setup.ts",
+    "build": "npm run build:main && npm run build:install",
+    "build:main": "ncc build src/index.ts -o dist/main -m",
+    "build:install": "ncc build src/install.ts -o dist/install -m",
     "clean": "node -e \"require('fs').rmSync('dist', {recursive:true, force:true})\"",
     "release": "npm run clean && npm run build"
   },
@@ -37,6 +36,7 @@
     "googleapis": "^169.0.0",
     "nodemailer": "^7.0.12",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "zod": "^4.2.1"
   }
