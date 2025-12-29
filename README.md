@@ -7,12 +7,14 @@ Task Dawn aggregates tasks from Google Tasks and iCloud Reminders, ranks them by
 ## Features
 
 - **Multi-Source Aggregation**: Pulls from all Google Task lists, including iCloud Reminders synced via IFTTT
+- **Auto-Initialization**: Creates "Task Dawn Sync" list automatically on first run for iCloud integration
 - **Smart Ranking**: Prioritizes tasks by:
   1. `URGENT` keyword in title (case-insensitive)
   2. Overdue due dates
   3. FIFO (oldest created first)
 - **Daily Digest**: Top 3 tasks delivered to your inbox every weekday
 - **Zero App Switching**: Works entirely through email and existing task apps
+- **SaaS-Ready Template**: Zero-knowledge architecture with plug-and-play GitHub Actions deployment
 
 ## Quick Start
 
@@ -65,8 +67,31 @@ Task Dawn reads from Google Tasks. To include iCloud Reminders:
 1. Create a free [IFTTT](https://ifttt.com) account
 2. Create an Applet:
    - **If This**: iOS Reminders > New reminder added to list
-   - **Then That**: Google Tasks > Create task in task list
-3. Repeat for each iCloud list you want to sync
+   - **Then That**: Google Tasks > Create task in task list > **"Task Dawn Sync"**
+3. The "Task Dawn Sync" list is created automatically on first run
+4. Repeat the IFTTT setup for each iCloud list you want to sync
+
+## SaaS Template Deployment
+
+Task Dawn is designed as a **standardized template** for white-label deployment:
+
+### manifest.json
+Contains all required environment variables for automated provisioning:
+- Lists all 5 required secrets (Client ID, Client Secret, Refresh Token, Email User, Email Pass)
+- Validation patterns for each secret type
+- OAuth scopes and setup wizard configuration
+- See `manifest.json` for the complete deployment specification
+
+### Zero-Knowledge Architecture
+- All credentials read exclusively from `process.env`
+- No hardcoded personal information anywhere in the codebase
+- Clean slate ready for copy-paste deployment to any user's GitHub account
+
+### Plug-and-Play GitHub Actions
+The workflow in `.github/workflows/daily_focus.yml`:
+- Uses pre-built `dist/` files (no npm install or build needed)
+- Runs automatically on weekdays at 12:00 UTC
+- Just needs the 5 GitHub secrets configured
 
 ## Ranking Algorithm
 

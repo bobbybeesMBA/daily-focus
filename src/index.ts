@@ -1,4 +1,4 @@
-import { fetchTasks, rankTasks } from './tasks.js';
+import { fetchTasks, rankTasks, ensureSyncListExists } from './tasks.js';
 import { sendDailyFocusEmail } from './email.js';
 
 const BRAND = {
@@ -21,6 +21,9 @@ async function main() {
   }
 
   try {
+    // Pre-check: Ensure sync list exists (auto-creates on first run)
+    await ensureSyncListExists();
+
     // Fetch and rank tasks from ALL lists (including iCloud-synced)
     console.log('Fetching tasks from Google Tasks...');
     const tasks = await fetchTasks();

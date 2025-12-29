@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "task-dawn",
+  "version": "1.0.0",
+  "description": "Task Dawn - Ignite your day with prioritized tasks in your inbox",
+  "repository": {
+    "type": "git",
+    "template": true
+  },
+  "runtime": {
+    "node": ">=20.0.0",
+    "type": "github-actions"
+  },
+  "secrets": [
+    {
+      "name": "GOOGLE_CLIENT_ID",
+      "description": "Google OAuth 2.0 Client ID from Google Cloud Console",
+      "required": true,
+      "type": "string",
+      "pattern": "^[0-9]+-[a-z0-9]+\\.apps\\.googleusercontent\\.com$",
+      "instructions": "Create at: APIs & Services > Credentials > OAuth 2.0 Client IDs"
+    },
+    {
+      "name": "GOOGLE_CLIENT_SECRET",
+      "description": "Google OAuth 2.0 Client Secret",
+      "required": true,
+      "type": "password",
+      "instructions": "Found alongside your Client ID in Google Cloud Console"
+    },
+    {
+      "name": "GOOGLE_REFRESH_TOKEN",
+      "description": "Long-lived OAuth refresh token for Google Tasks API access",
+      "required": true,
+      "type": "password",
+      "instructions": "Generated during setup wizard OAuth flow"
+    },
+    {
+      "name": "EMAIL_USER",
+      "description": "Gmail address for sending daily digest emails",
+      "required": true,
+      "type": "email",
+      "pattern": "^[^@]+@gmail\\.com$",
+      "instructions": "Your Gmail address (must be Gmail for SMTP)"
+    },
+    {
+      "name": "EMAIL_PASS",
+      "description": "Gmail App Password (16-character)",
+      "required": true,
+      "type": "password",
+      "pattern": "^[a-z]{4} [a-z]{4} [a-z]{4} [a-z]{4}$|^[a-z]{16}$",
+      "instructions": "Generate at: myaccount.google.com/apppasswords (requires 2FA)"
+    }
+  ],
+  "scopes": {
+    "google": [
+      "https://www.googleapis.com/auth/tasks.readonly"
+    ]
+  },
+  "features": {
+    "auto_sync_list": {
+      "name": "Task Dawn Sync",
+      "description": "Auto-created on first run for iCloud Reminders integration via IFTTT"
+    },
+    "schedule": {
+      "cron": "0 12 * * 1-5",
+      "description": "Runs weekdays at 12:00 UTC"
+    }
+  },
+  "setup": {
+    "wizard_port": 3847,
+    "redirect_uri": "http://localhost:3847/oauth/callback"
+  }
+}

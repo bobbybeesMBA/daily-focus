@@ -2,6 +2,16 @@ import { google, tasks_v1 } from 'googleapis';
 import { z } from 'zod';
 import { config } from './config.js';
 
+// ════════════════════════════════════════════════════════════════════════════
+// Constants
+// ════════════════════════════════════════════════════════════════════════════
+
+const SYNC_LIST_NAME = 'Task Dawn Sync';
+
+// ════════════════════════════════════════════════════════════════════════════
+// Schemas
+// ════════════════════════════════════════════════════════════════════════════
+
 const TaskSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -16,6 +26,10 @@ const TaskListSchema = z.object({
 });
 
 export type Task = z.infer<typeof TaskSchema> & { created?: string };
+
+// ════════════════════════════════════════════════════════════════════════════
+// OAuth Client
+// ════════════════════════════════════════════════════════════════════════════
 
 const oauth2Client = new google.auth.OAuth2(
   config.GOOGLE_CLIENT_ID,
@@ -65,6 +79,36 @@ async function getAllTaskLists(): Promise<{ id: string; title: string }[]> {
   }
 
   return validLists;
+}
+
+/**
+ * Ensures the 'Task Dawn Sync' list exists in the user's Google Tasks.
+ * Creates it automatically on first run if it doesn't exist.
+ * This list is used for iCloud Reminders sync via IFTTT.
+ */
+export async function ensureSyncListExists(): Promise<{ id: string; title: string }> {
+  const lists = await getAllTaskLists();
+  const existing = lists.find(l => l.title === SYNC_LIST_NAME);
+
+  if (existing) {
+    console.log(`Sync list "${SYNC_LIST_NAME}" found.`);
+    return existing;
+  }
+
+  console.log(`Creating sync list "${SYNC_LIST_NAME}"...`);
+  const response = await withRetry(() =>
+    tasksApi.tasklists.insert({
+      requestBody: { title: SYNC_LIST_NAME },
+    })
+  );
+
+  const newList = response.data;
+  if (!newList.id || !newList.title) {
+    throw new Error('Failed to create sync list');
+  }
+
+  console.log(`Sync list "${SYNC_LIST_NAME}" created successfully.`);
+  return { id: newList.id, title: newList.title };
 }
 
 export async function fetchTasks(): Promise<Task[]> {
