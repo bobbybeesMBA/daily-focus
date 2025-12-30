@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Example User",
+    "email": "user@gmail.com",
+    "google_client_id": "123456789.apps.googleusercontent.com",
+    "google_client_secret": "GOCSPX-xxxxxxxxxxxxxxxxxx",
+    "google_refresh_token": "1//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "email_app_password": "xxxx xxxx xxxx xxxx"
+  }
+]

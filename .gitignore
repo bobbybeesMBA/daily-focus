@@ -4,6 +4,9 @@ node_modules/
 # Environment (contains secrets)
 .env
 
+# Python user credentials (contains secrets)
+python/users.json
+
 # Logs
 *.log
 npm-debug.log*
