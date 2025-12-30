@@ -5,7 +5,7 @@ node_modules/
 .env
 
 # Python user credentials (contains secrets)
-python/users.json
+users.json
 
 # Logs
 *.log

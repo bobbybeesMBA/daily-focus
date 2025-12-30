@@ -1,172 +1,132 @@
-# Task Dawn
+# Task Dawn - Python Multi-User Implementation
 
-**Ignite your day with prioritized tasks in your inbox.**
-
-Task Dawn aggregates tasks from Google Tasks and iCloud Reminders, ranks them by urgency, age, and your settings, then emails a top 3 summary every weekday morning - no new apps, just enhanced routine.
+Python version of Task Dawn that processes multiple users from a `users.json` file.
 
 ## Features
 
-- **Multi-Source Aggregation**: Pulls from all Google Task lists, including iCloud Reminders synced via IFTTT
-- **Auto-Initialization**: Creates "Task Dawn Sync" list automatically on first run for iCloud integration
-- **Smart Ranking**: Prioritizes tasks by:
-  1. `URGENT` keyword in title (case-insensitive)
-  2. Overdue due dates
-  3. FIFO (oldest created first)
-- **Daily Digest**: Top 3 tasks delivered to your inbox every weekday
-- **Zero App Switching**: Works entirely through email and existing task apps
-- **SaaS-Ready Template**: Zero-knowledge architecture with plug-and-play GitHub Actions deployment
+- **Multi-User Support**: Process multiple users in a single run
+- **Fault Tolerance**: One user's failure doesn't crash other users
+- **Google Tasks API**: Fetch and rank tasks using the Ignite algorithm
+- **Auto-Create Sync List**: Creates "Task Dawn Sync" list automatically
+- **Gmail SMTP**: Send emails via Gmail App Passwords
 
-## Quick Start
+## Setup
 
 ### 1. Install Dependencies
 
 ```bash
-npm install
+pip install -r requirements.txt
 ```
 
-### 2. Run the Setup Wizard
+### 2. Create User Configuration
+
+Copy the example file and add your users:
 
 ```bash
-npm run setup
+cp users.json.example users.json
 ```
 
-The wizard will guide you through:
-- Setting up the iCloud-to-Google bridge (IFTTT)
-- Creating Google Cloud credentials
-- Authenticating to get your Refresh Token
-- **Automatically saves your `.env` file**
-- Generating GitHub Secrets for automation
+Edit `users.json` with real credentials:
 
-### 3. Test Locally
+```json
+[
+  {
+    "name": "John Doe",
+    "email": "john@gmail.com",
+    "google_client_id": "123456789.apps.googleusercontent.com",
+    "google_client_secret": "GOCSPX-your-secret-here",
+    "google_refresh_token": "1//your-refresh-token-here",
+    "email_app_password": "xxxx xxxx xxxx xxxx"
+  }
+]
+```
+
+### 3. Run the Script
 
 ```bash
-npm start
+python task_dawn.py
 ```
 
-### 4. Deploy to GitHub Actions
+## Credentials Guide
 
-Push to GitHub and add the secrets from the setup wizard:
+### Google OAuth Credentials
 
+Each user needs:
+- **Client ID** - From Google Cloud Console
+- **Client Secret** - From Google Cloud Console
+- **Refresh Token** - From OAuth flow (use OAuth 2.0 Playground or create your own auth flow)
+
+You can either:
+- **Option A**: Each user has their own Google Cloud project (separate Client ID/Secret)
+- **Option B**: Share one Google Cloud project (same Client ID/Secret, different Refresh Tokens)
+
+### Gmail App Password
+
+Each user needs a Gmail App Password:
+1. Go to https://myaccount.google.com/apppasswords
+2. Enable 2-Step Verification (if not already)
+3. Generate app password for "Mail"
+4. Copy the 16-character password
+
+## How It Works
+
+For each user in `users.json`:
+
+1. **Authenticate** with Google using their refresh token
+2. **Ensure Sync List** exists (auto-create if missing)
+3. **Fetch Tasks** from all task lists
+4. **Rank Tasks** using Ignite algorithm:
+   - Priority 1: "URGENT" in title
+   - Priority 2: Overdue tasks
+   - Priority 3: Oldest first (FIFO)
+5. **Send Email** with top 3 tasks
+
+## Error Handling
+
+- Each user is processed independently
+- Errors are logged but don't stop other users
+- Final summary shows success/error counts
+
+## Schedule with Cron
+
+Run weekdays at 12:00 UTC:
+
+```cron
+0 12 * * 1-5 cd /path/to/daily-focus && python task_dawn.py
 ```
-Settings > Secrets and variables > Actions > New repository secret
-```
 
-Required secrets:
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `GOOGLE_REFRESH_TOKEN`
-- `EMAIL_USER`
-- `EMAIL_PASS`
+## Security
 
-The workflow runs automatically at 12:00 UTC on weekdays.
+- `users.json` is gitignored (contains secrets)
+- Never commit credentials to git
+- Use Gmail App Passwords (not your main password)
 
-## iCloud Integration
+## Ignite Ranking Algorithm
 
-Task Dawn reads from Google Tasks. To include iCloud Reminders:
-
-1. Create a free [IFTTT](https://ifttt.com) account
-2. Create an Applet:
-   - **If This**: iOS Reminders > New reminder added to list
-   - **Then That**: Google Tasks > Create task in task list > **"Task Dawn Sync"**
-3. The "Task Dawn Sync" list is created automatically on first run
-4. Repeat the IFTTT setup for each iCloud list you want to sync
-
-## SaaS Template Deployment
-
-Task Dawn is designed as a **standardized template** for white-label deployment:
-
-### manifest.json
-Contains all required environment variables for automated provisioning:
-- Lists all 5 required secrets (Client ID, Client Secret, Refresh Token, Email User, Email Pass)
-- Validation patterns for each secret type
-- OAuth scopes and setup wizard configuration
-- See `manifest.json` for the complete deployment specification
-
-### Zero-Knowledge Architecture
-- All credentials read exclusively from `process.env`
-- No hardcoded personal information anywhere in the codebase
-- Clean slate ready for copy-paste deployment to any user's GitHub account
-
-### Plug-and-Play GitHub Actions
-The workflow in `.github/workflows/daily_focus.yml`:
-- Uses pre-built `dist/` files (no npm install or build needed)
-- Runs automatically on weekdays at 12:00 UTC
-- Just needs the 5 GitHub secrets configured
-
-## Ranking Algorithm
-
-Tasks are sorted in this priority order:
+Tasks are sorted by:
 
 | Priority | Criteria | Example |
 |----------|----------|---------|
-| 1 | Title contains "URGENT" | "URGENT: Call client" |
-| 2 | Due date is in the past | Due: Dec 20 (today is Dec 25) |
-| 3 | Oldest created first | Created 5 days ago beats yesterday |
+| 1 | "URGENT" in title | "URGENT: Call client" |
+| 2 | Overdue (due < today) | Due Dec 20 (today is Dec 25) |
+| 3 | Oldest created first | Created 5 days ago > yesterday |
 
 ## Email Format
 
 ```
 Task Dawn
-=======================================
+═══════════════════════════════════════
 
 TOP PRIORITY
 >>> URGENT: Submit proposal <<<
 
----------------------------------------
+───────────────────────────────────────
 STRETCH GOALS
-  2. Review PR from Alex (Due: Dec 26)
+  2. Review PR (Due: Dec 26)
   3. Update documentation
 
----------------------------------------
+───────────────────────────────────────
 12 tasks in queue
 
 Ignite your day with prioritized tasks in your inbox.
 ```
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run setup` | Run the interactive setup wizard |
-| `npm start` | Run Task Dawn (send daily email) |
-| `npm run dev` | Development mode (uses tsx) |
-| `npm run build` | Rebuild from source |
-| `npm run release` | Clean build for distribution |
-
-## Project Structure
-
-```
-task-dawn/
-├── src/                  # Source code (TypeScript)
-│   ├── index.ts          # Main entry point
-│   ├── install.ts        # Setup wizard (saves .env automatically)
-│   ├── tasks.ts          # Google Tasks API + ranking
-│   ├── email.ts          # Email formatting + sending
-│   └── config.ts         # Environment validation
-├── dist/                 # Pre-built, ready to run
-│   ├── main/             # Main application
-│   └── install/          # Setup wizard
-├── .github/
-│   └── workflows/
-│       └── daily_focus.yml
-├── .env.example          # Template for credentials
-└── .env                  # Your credentials (auto-generated by setup)
-```
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID |
-| `GOOGLE_CLIENT_SECRET` | OAuth 2.0 Client Secret |
-| `GOOGLE_REFRESH_TOKEN` | Long-lived refresh token |
-| `EMAIL_USER` | Gmail address for sending |
-| `EMAIL_PASS` | Gmail App Password |
-
-## Alpha Notes
-
-This is an alpha release. Please report issues and feedback.
-
----
-
-**Task Dawn** - Ignite your day with prioritized tasks in your inbox.
